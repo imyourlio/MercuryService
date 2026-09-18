@@ -17,7 +17,7 @@ local Settings = {
     ShowTeam = false,          
 
     BoxESP = true,
-    BoxStyle = "Corner",       
+    BoxStyle = "Corner",  -- "Corner" | "Full" | "ThreeD"     
     BoxThickness = 1.5,
 
     TracerESP = false,
