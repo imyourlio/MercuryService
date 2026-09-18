@@ -17,7 +17,7 @@ local Settings = {
     ShowTeam = false,          
 
     BoxESP = true,
-    BoxStyle = "Corner",  -- "Corner" | "Full" | "ThreeD"     
+    BoxStyle = "Corner",       
     BoxThickness = 1.5,
 
     TracerESP = false,
@@ -445,7 +445,7 @@ local function UpdateESP(player)
             if va and vb and a.Z > 0 and b.Z > 0 then
                 line.From = Vector2.new(a.X, a.Y)
                 line.To = Vector2.new(b.X, b.Y)
-                line.Color = color
+                line.Color = Color3.new(255, 255, 255)
                 line.Thickness = Settings.SkeletonThickness
                 line.Visible = true
             else
