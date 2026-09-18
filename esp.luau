@@ -13,7 +13,7 @@ ESP.__index = ESP
 
 local Settings = {
     Enabled = false,
-    TeamCheck = true,          
+    TeamCheck = false,          
     ShowTeam = false,          
 
     BoxESP = true,
@@ -407,7 +407,7 @@ local function UpdateESP(player)
         end
         esp.Info.Name.Text = nameText
         esp.Info.Name.Position = Vector2.new(boxPos.X + boxWidth / 2, boxPos.Y - 18)
-        esp.Info.Name.Color = color
+        esp.Info.Name.Color = Color3.new(255, 255, 255)
         esp.Info.Name.Size = Settings.TextSize
         esp.Info.Name.Visible = true
     else
