@@ -429,13 +429,19 @@ local function UpdateESP(player)
     end
 
     if Settings.SkeletonESP and skeleton then
+        local function getPart(name1, name2)
+            return character:FindFirstChild(name1) or character:FindFirstChild(name2)
+        end
+
         local function bone(fromPart, toPart, line)
-            if not fromPart or not toPart then
+            if not (fromPart and toPart) then
                 line.Visible = false
                 return
             end
+
             local a, va = Camera:WorldToViewportPoint(fromPart.Position)
             local b, vb = Camera:WorldToViewportPoint(toPart.Position)
+
             if va and vb and a.Z > 0 and b.Z > 0 then
                 line.From = Vector2.new(a.X, a.Y)
                 line.To = Vector2.new(b.X, b.Y)
@@ -447,35 +453,37 @@ local function UpdateESP(player)
             end
         end
 
-        local head = character:FindFirstChild("Head")
-        local upper = character:FindFirstChild("UpperTorso") or character:FindFirstChild("Torso")
-        local lower = character:FindFirstChild("LowerTorso") or upper
+        local head      = getPart("Head", "Head")
+        local upper     = getPart("UpperTorso", "Torso")
+        local lower     = getPart("LowerTorso", "Torso")
+
+        local lUpperArm = getPart("LeftUpperArm", "Left Arm")
+        local lLowerArm = getPart("LeftLowerArm", "Left Arm")
+        local rUpperArm = getPart("RightUpperArm", "Right Arm")
+        local rLowerArm = getPart("RightLowerArm", "Right Arm")
+
+        local lUpperLeg = getPart("LeftUpperLeg", "Left Leg")
+        local lLowerLeg = getPart("LeftLowerLeg", "Left Leg")
+        local rUpperLeg = getPart("RightUpperLeg", "Right Leg")
+        local rLowerLeg = getPart("RightLowerLeg", "Right Leg")
 
         bone(head, upper, skeleton.Head)
         bone(upper, lower, skeleton.UpperSpine)
 
-        local lUpper = character:FindFirstChild("LeftUpperArm") or character:FindFirstChild("Left Arm")
-        local lLower = character:FindFirstChild("LeftLowerArm") or lUpper
-        local rUpper = character:FindFirstChild("RightUpperArm") or character:FindFirstChild("Right Arm")
-        local rLower = character:FindFirstChild("RightLowerArm") or rUpper
+        bone(upper, lUpperArm, skeleton.LeftShoulder)
+        bone(lUpperArm, lLowerArm, skeleton.LeftUpperArm)
+        bone(upper, rUpperArm, skeleton.RightShoulder)
+        bone(rUpperArm, rLowerArm, skeleton.RightUpperArm)
 
-        bone(upper, lUpper, skeleton.LeftShoulder)
-        bone(lUpper, lLower, skeleton.LeftUpperArm)
-        bone(upper, rUpper, skeleton.RightShoulder)
-        bone(rUpper, rLower, skeleton.RightUpperArm)
-
-        local lUpLeg = character:FindFirstChild("LeftUpperLeg") or character:FindFirstChild("Left Leg")
-        local lLowLeg = character:FindFirstChild("LeftLowerLeg") or lUpLeg
-        local rUpLeg = character:FindFirstChild("RightUpperLeg") or character:FindFirstChild("Right Leg")
-        local rLowLeg = character:FindFirstChild("RightLowerLeg") or rUpLeg
-
-        bone(lower, lUpLeg, skeleton.LeftHip)
-        bone(lUpLeg, lLowLeg, skeleton.LeftUpperLeg)
-        bone(lower, rUpLeg, skeleton.RightHip)
-        bone(rUpLeg, rLowLeg, skeleton.RightUpperLeg)
+        bone(lower, lUpperLeg, skeleton.LeftHip)
+        bone(lUpperLeg, lLowerLeg, skeleton.LeftUpperLeg)
+        bone(lower, rUpperLeg, skeleton.RightHip)
+        bone(rUpperLeg, rLowerLeg, skeleton.RightUpperLeg)
     else
         if skeleton then
-            for _, v in pairs(skeleton) do v.Visible = false end
+            for _, v in pairs(skeleton) do
+                v.Visible = false
+            end
         end
     end
 end
