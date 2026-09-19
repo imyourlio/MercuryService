@@ -13,15 +13,15 @@ ESP.__index = ESP
 
 local Settings = {
     Enabled = false,
-    TeamCheck = false,          
-    ShowTeam = false,          
+    TeamCheck = false,
+    ShowTeam = false,
 
     BoxESP = true,
-    BoxStyle = "Corner",       
+    BoxStyle = "Corner",
     BoxThickness = 1.5,
 
     TracerESP = false,
-    TracerOrigin = "Bottom",   -- "Bottom" | "Top" | "Mouse" | "Center"
+    TracerOrigin = "Bottom",
     TracerThickness = 1.2,
 
     HealthESP = true,
@@ -233,7 +233,8 @@ local function UpdateESP(player)
 
     local rootPart = character:FindFirstChild("HumanoidRootPart")
     local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not rootPart or not humanoid or humanoid.Health <= 0 then
+    local head = character:FindFirstChild("Head")
+    if not rootPart or not humanoid or humanoid.Health <= 0 or not head then
         HideAll(esp, skeleton)
         return
     end
@@ -247,22 +248,21 @@ local function UpdateESP(player)
     end
 
     local color = GetPlayerColor(player)
-    local size = character:GetExtentsSize()
-    local cf = rootPart.CFrame
 
-    local top = Camera:WorldToViewportPoint((cf * CFrame.new(0, size.Y/2, 0)).Position)
-    local bottom = Camera:WorldToViewportPoint((cf * CFrame.new(0, -size.Y/2, 0)).Position)
+    local headPos = Camera:WorldToViewportPoint(head.Position)
+    local rootPos = Camera:WorldToViewportPoint(rootPart.Position)
 
-    local screenSize = bottom.Y - top.Y
-    local boxWidth = screenSize * 0.65
-    local boxPos = Vector2.new(top.X - boxWidth/2, top.Y)
-    local boxSize = Vector2.new(boxWidth, screenSize)
+    local height = math.abs(headPos.Y - rootPos.Y) * 2.15
+    local width = height * 0.65
+
+    local boxPos = Vector2.new(rootPos.X - width / 2, headPos.Y - height * 0.18)
+    local boxSize = Vector2.new(width, height)
 
     for _, v in pairs(esp.Box) do v.Visible = false end
 
     if Settings.BoxESP then
         if Settings.BoxStyle == "Corner" then
-            local c = boxWidth * 0.22
+            local c = width * 0.22
 
             esp.Box.TopLeft.From = boxPos
             esp.Box.TopLeft.To = boxPos + Vector2.new(c, 0)
@@ -314,19 +314,22 @@ local function UpdateESP(player)
             esp.Box.Bottom.Visible = true
 
         elseif Settings.BoxStyle == "ThreeD" then
+            local cf = rootPart.CFrame
+            local size = Vector3.new(width / 50, height / 50, width / 50)
+
             local function wp(offset)
                 local p, vis = Camera:WorldToViewportPoint((cf * offset).Position)
                 return Vector2.new(p.X, p.Y), vis and p.Z > 0
             end
 
-            local tl, v1 = wp(CFrame.new(-size.X/2, size.Y/2, -size.Z/2))
-            local tr, v2 = wp(CFrame.new(size.X/2, size.Y/2, -size.Z/2))
-            local bl, v3 = wp(CFrame.new(-size.X/2, -size.Y/2, -size.Z/2))
-            local br, v4 = wp(CFrame.new(size.X/2, -size.Y/2, -size.Z/2))
-            local tlb, v5 = wp(CFrame.new(-size.X/2, size.Y/2, size.Z/2))
-            local trb, v6 = wp(CFrame.new(size.X/2, size.Y/2, size.Z/2))
-            local blb, v7 = wp(CFrame.new(-size.X/2, -size.Y/2, size.Z/2))
-            local brb, v8 = wp(CFrame.new(size.X/2, -size.Y/2, size.Z/2))
+            local tl, v1 = wp(CFrame.new(-size.X, size.Y, -size.Z))
+            local tr, v2 = wp(CFrame.new(size.X, size.Y, -size.Z))
+            local bl, v3 = wp(CFrame.new(-size.X, -size.Y, -size.Z))
+            local br, v4 = wp(CFrame.new(size.X, -size.Y, -size.Z))
+            local tlb, v5 = wp(CFrame.new(-size.X, size.Y, size.Z))
+            local trb, v6 = wp(CFrame.new(size.X, size.Y, size.Z))
+            local blb, v7 = wp(CFrame.new(-size.X, -size.Y, size.Z))
+            local brb, v8 = wp(CFrame.new(size.X, -size.Y, size.Z))
 
             if v1 and v2 and v3 and v4 and v5 and v6 and v7 and v8 then
                 local function set(line, a, b)
@@ -375,9 +378,9 @@ local function UpdateESP(player)
         local maxHp = humanoid.MaxHealth
         local percent = math.clamp(hp / maxHp, 0, 1)
 
-        local barH = screenSize * 0.8
+        local barH = height * 0.8
         local barW = 4
-        local barPos = Vector2.new(boxPos.X - barW - 4, boxPos.Y + (screenSize - barH) / 2)
+        local barPos = Vector2.new(boxPos.X - barW - 4, boxPos.Y + (height - barH) / 2)
 
         esp.HealthBar.Outline.Size = Vector2.new(barW, barH)
         esp.HealthBar.Outline.Position = barPos
@@ -406,8 +409,8 @@ local function UpdateESP(player)
             nameText = nameText .. " [" .. math.floor(distance) .. "m]"
         end
         esp.Info.Name.Text = nameText
-        esp.Info.Name.Position = Vector2.new(boxPos.X + boxWidth / 2, boxPos.Y - 18)
-        esp.Info.Name.Color = Color3.new(255, 255, 255)
+        esp.Info.Name.Position = Vector2.new(boxPos.X + width / 2, boxPos.Y - 18)
+        esp.Info.Name.Color = Color3.new(1, 1, 1)
         esp.Info.Name.Size = Settings.TextSize
         esp.Info.Name.Visible = true
     else
@@ -445,7 +448,7 @@ local function UpdateESP(player)
             if va and vb and a.Z > 0 and b.Z > 0 then
                 line.From = Vector2.new(a.X, a.Y)
                 line.To = Vector2.new(b.X, b.Y)
-                line.Color = Color3.new(255, 255, 255)
+                line.Color = Color3.new(1, 1, 1)
                 line.Thickness = Settings.SkeletonThickness
                 line.Visible = true
             else
@@ -453,9 +456,9 @@ local function UpdateESP(player)
             end
         end
 
-        local head      = getPart("Head", "Head")
-        local upper     = getPart("UpperTorso", "Torso")
-        local lower     = getPart("LowerTorso", "Torso")
+        local headPart = getPart("Head", "Head")
+        local upper = getPart("UpperTorso", "Torso")
+        local lower = getPart("LowerTorso", "Torso")
 
         local lUpperArm = getPart("LeftUpperArm", "Left Arm")
         local lLowerArm = getPart("LeftLowerArm", "Left Arm")
@@ -467,7 +470,7 @@ local function UpdateESP(player)
         local rUpperLeg = getPart("RightUpperLeg", "Right Leg")
         local rLowerLeg = getPart("RightLowerLeg", "Right Leg")
 
-        bone(head, upper, skeleton.Head)
+        bone(headPart, upper, skeleton.Head)
         bone(upper, lower, skeleton.UpperSpine)
 
         bone(upper, lUpperArm, skeleton.LeftShoulder)
